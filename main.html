@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Metodos numericos para raices - UMSA</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #020617;
+    --bg2: #020617;
+    --neon: #39ff14;
+    --neon-soft: rgba(57, 255, 20, 0.22);
+    --card-bg: rgba(15, 23, 42, 0.96);
+    --border: #111827;
+    --text: #e5e7eb;
+    --muted: #9ca3af;
+    --danger: #f97373;
+    --radius: 14px;
+  }
+  * {
+    box-sizing: border-box;
+    font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    padding: 24px 12px 32px 12px;
+    background:
+      radial-gradient(circle at 0% 0%, rgba(57, 255, 20, 0.12), transparent 55%),
+      radial-gradient(circle at 100% 100%, rgba(59, 130, 246, 0.18), transparent 55%),
+      linear-gradient(135deg, #020617 0%, #020617 45%, #020617 100%);
+    color: var(--text);
+    display: flex;
+    justify-content: center;
+  }
+  .shell {
+    width: 100%;
+    max-width: 1200px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .identity-card {
+    background: radial-gradient(circle at top left, rgba(57, 255, 20, 0.18), transparent 55%), var(--card-bg);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    border: 1px solid rgba(15, 23, 42, 0.9);
+    box-shadow: 0 0 22px var(--neon-soft);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .identity-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .identity-main {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .identity-main h2 {
+    margin: 0;
+    font-size: 22px;
+    letter-spacing: 0.03em;
+    color: var(--neon);
+    text-shadow: 0 0 14px rgba(57, 255, 20, 0.9);
+  }
+  .identity-main p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .identity-tags {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-end;
+  }
+  .chip {
+    padding: 5px 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(57, 255, 20, 0.8);
+    background: rgba(15, 23, 42, 0.95);
+    color: #bbf7d0;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .identity-body {
+    font-size: 13px;
+    color: #d1d5db;
+  }
+  h1 {
+    font-size: 20px;
+    margin: 4px 0 4px 0;
+  }
+  .subtitle {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .subtitle code {
+    background: rgba(15, 23, 42, 0.9);
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-size: 12px;
+  }
+  .grid-main {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    gap: 16px;
+  }
+  .card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    padding: 16px 16px 18px 16px;
+    border: 1px solid var(--border);
+    box-shadow: 0 0 18px rgba(15, 23, 42, 0.9);
+  }
+  label {
+    font-size: 13px;
+    display: block;
+    margin-bottom: 4px;
+    color: #cbd5f5;
+  }
+  input[type="text"],
+  input[type="number"],
+  select {
+    width: 100%;
+    padding: 7px 9px;
+    border-radius: 8px;
+    border: 1px solid #4b5563;
+    background: #020617;
+    color: var(--text);
+    font-size: 13px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="text"]:focus,
+  input[type="number"]:focus {
+    outline: none;
+    border-color: var(--neon);
+    box-shadow: 0 0 0 1px rgba(57, 255, 20, 0.35);
+    background: #020617;
+  }
+  .row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .methods {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 10px 0 12px 0;
+  }
+  .methods label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 0;
+    font-size: 13px;
+    padding: 5px 9px;
+    border-radius: 999px;
+    border: 1px solid #1f2937;
+    background: rgba(15, 23, 42, 0.9);
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+  }
+  .methods input[type="radio"] {
+    accent-color: var(--neon);
+  }
+  .methods label:hover {
+    border-color: var(--neon);
+    box-shadow: 0 0 10px rgba(57, 255, 20, 0.4);
+  }
+  button {
+    padding: 9px 18px;
+    border-radius: 999px;
+    border: 1px solid rgba(57, 255, 20, 0.9);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    background: radial-gradient(circle at top left, rgba(57, 255, 20, 0.25), var(--neon));
+    color: #020617;
+    box-shadow: 0 0 16px rgba(57, 255, 20, 0.85);
+    margin-top: 4px;
+    transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+  }
+  button:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.03);
+    box-shadow: 0 0 20px rgba(57, 255, 20, 1);
+  }
+  button:active {
+    transform: translateY(0);
+    box-shadow: 0 0 12px rgba(57, 255, 20, 0.7);
+  }
+  .result-main {
+    font-size: 13px;
+    margin-top: 12px;
+    margin-bottom: 8px;
+    line-height: 1.4;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 11px;
+    border-radius: 999px;
+    background: #022c22;
+    border: 1px solid rgba(57, 255, 20, 0.8);
+    color: #a7f3d0;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .badge span.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--neon);
+    box-shadow: 0 0 8px rgba(57, 255, 20, 0.8);
+  }
+  .table-wrapper {
+    max-height: 260px;
+    overflow: auto;
+    border-radius: 10px;
+    border: 1px solid #111827;
+    margin-top: 8px;
+    background: radial-gradient(circle at top left, rgba(57, 255, 20, 0.06), rgba(15, 23, 42, 0.97));
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11.5px;
+  }
+  th, td {
+    padding: 5px 7px;
+    border-bottom: 1px solid #020617;
+    text-align: right;
+    white-space: nowrap;
+  }
+  th {
+    position: sticky;
+    top: 0;
+    background: #020617;
+    z-index: 1;
+    font-weight: 600;
+  }
+  tr:nth-child(even) td {
+    background: rgba(15, 23, 42, 0.9);
+  }
+  td:first-child,
+  th:first-child {
+    text-align: center;
+  }
+  .error {
+    color: var(--danger);
+    font-size: 13px;
+    margin-top: 8px;
+    min-height: 18px;
+  }
+  canvas {
+    width: 100%;
+    border-radius: 16px;
+    border: 1px solid #111827;
+    background:
+      radial-gradient(circle at 0% 0%, rgba(57, 255, 20, 0.12), transparent 55%),
+      radial-gradient(circle at 100% 100%, rgba(59, 130, 246, 0.16), transparent 55%),
+      #020617;
+    aspect-ratio: 16 / 9;
+    display: block;
+  }
+  .hint {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 8px;
+  }
+  code {
+    background: rgba(15, 23, 42, 0.9);
+    padding: 2px 5px;
+    border-radius: 5px;
+    color: #a7f3d0;
+  }
+  @media (max-width: 900px) {
+    body {
+      padding: 18px 10px 24px 10px;
+    }
+    .grid-main {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .identity-top {
+      align-items: flex-start;
+    }
+    .identity-tags {
+      align-items: flex-start;
+    }
+  }
+  @media (max-width: 600px) {
+    .identity-main h2 {
+      font-size: 19px;
+    }
+    .row {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    button {
+      width: 100%;
+      justify-content: center;
+      display: inline-flex;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="shell">
+    <div class="identity-card">
+      <div class="identity-top">
+        <div class="identity-main">
+          <h2>Carlos Manuel Miranda Aguirre</h2>
+          <p>CI: 13759486 · RU: 1825954</p>
+          <p>Universidad Mayor de San Andres (UMSA) · Carrera de Informatica</p>
+        </div>
+        <div class="identity-tags">
+          <div class="chip">Materia: Metodos numericos</div>
+          <div class="chip">Proyecto: Raices por metodos iterativos</div>
+        </div>
+      </div>
+      <div class="identity-body">
+        Pagina web interactiva para ingresar una funcion f(x) y aproximar sus raices con los metodos de Biseccion, Newton y Secante. Permite comparar iteraciones, error y comportamiento grafico de cada metodo como apoyo al curso de Metodos numericos en la UMSA.
+      </div>
+    </div>
+
+    <h1>Metodos numericos para raices</h1>
+    <p class="subtitle">
+      Escribe f(x) en formato JavaScript, por ejemplo: <code>x**3 - Math.exp(0.8*x) - 20</code> o <code>3*Math.sin(0.5*x) - 0.5*x + 2</code>.
+    </p>
+
+    <div class="grid-main">
+      <div class="card">
+        <div style="margin-bottom:10px;">
+          <label for="expr">f(x)</label>
+          <input id="expr" type="text" placeholder="x**3 - Math.exp(0.8*x) - 20">
+          <div class="hint">
+            Puedes usar sin, cos, tan, exp, log, sqrt, abs, por ejemplo: <code>3*sin(0.5*x) - 0.5*x + 2</code>.
+          </div>
+        </div>
+
+        <div class="methods">
+          <label><input type="radio" name="method" value="bisection" checked> Biseccion</label>
+          <label><input type="radio" name="method" value="newton"> Newton</label>
+          <label><input type="radio" name="method" value="secant"> Secante</label>
+        </div>
+
+        <div id="inputs-bisection">
+          <div class="row">
+            <div>
+              <label for="a">a</label>
+              <input id="a" type="number" step="any" value="2">
+            </div>
+            <div>
+              <label for="b">b</label>
+              <input id="b" type="number" step="any" value="4">
+            </div>
+          </div>
+        </div>
+
+        <div id="inputs-newton" style="display:none;">
+          <div class="row">
+            <div>
+              <label for="x0-newton">x0</label>
+              <input id="x0-newton" type="number" step="any" value="3">
+            </div>
+            <div>
+              <label for="dummy-n">nota</label>
+              <input id="dummy-n" type="text" disabled value="usa derivada numerica">
+            </div>
+          </div>
+        </div>
+
+        <div id="inputs-secant" style="display:none;">
+          <div class="row">
+            <div>
+              <label for="x0-secant">x0</label>
+              <input id="x0-secant" type="number" step="any" value="2">
+            </div>
+            <div>
+              <label for="x1-secant">x1</label>
+              <input id="x1-secant" type="number" step="any" value="4">
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label for="tol">Tolerancia</label>
+            <input id="tol" type="number" step="any" value="1e-6">
+          </div>
+          <div>
+            <label for="maxIter">Max iteraciones</label>
+            <input id="maxIter" type="number" step="1" value="50">
+          </div>
+        </div>
+
+        <button id="run">Ejecutar metodo</button>
+        <div id="error" class="error"></div>
+
+        <div id="summary" class="result-main"></div>
+        <div class="table-wrapper" id="table-wrapper" style="display:none;">
+          <table id="table-iter"></table>
+        </div>
+      </div>
+
+      <div class="card">
+        <canvas id="plot" width="700" height="320"></canvas>
+        <div class="hint">
+          Se grafica f(x) en el intervalo de trabajo y se marca la raiz aproximada obtenida con el metodo seleccionado.
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  function prepareExpr(expr) {
+    var r = expr.trim();
+    r = r.replace(/sin\(/gi, "Math.sin(");
+    r = r.replace(/cos\(/gi, "Math.cos(");
+    r = r.replace(/tan\(/gi, "Math.tan(");
+    r = r.replace(/exp\(/gi, "Math.exp(");
+    r = r.replace(/log\(/gi, "Math.log(");
+    r = r.replace(/sqrt\(/gi, "Math.sqrt(");
+    r = r.replace(/abs\(/gi, "Math.abs(");
+    r = r.replace(/pow\(/gi, "Math.pow(");
+    return r;
+  }
+
+  function buildFunction(expr) {
+    var e = prepareExpr(expr);
+    var fn = new Function("x", "return " + e + ";");
+    return fn;
+  }
+
+  function bisection(f, a, b, tol, maxIter) {
+    var fa = f(a);
+    var fb = f(b);
+    if (!isFinite(fa) || !isFinite(fb)) {
+      return { error: "Valores no validos en el intervalo", iterations: [] };
+    }
+    if (fa * fb > 0) {
+      return { error: "El intervalo no cambia de signo", iterations: [] };
+    }
+    var iteraciones = [];
+    var c = null;
+    for (var k = 1; k <= maxIter; k++) {
+      c = 0.5 * (a + b);
+      var fc = f(c);
+      var err = Math.abs(b - a) / 2;
+      iteraciones.push({
+        k: k,
+        a: a,
+        b: b,
+        c: c,
+        fa: fa,
+        fb: fb,
+        fc: fc,
+        err: err
+      });
+      if (Math.abs(fc) < tol || err < tol) {
+        break;
+      }
+      if (fa * fc < 0) {
+        b = c;
+        fb = fc;
+      } else {
+        a = c;
+        fa = fc;
+      }
+    }
+    return { root: c, iterations: iteraciones };
+  }
+
+  function newton(f, x0, tol, maxIter) {
+    var iteraciones = [];
+    var x = x0;
+    var h = 1e-6;
+    for (var k = 1; k <= maxIter; k++) {
+      var fx = f(x);
+      var dfx = (f(x + h) - f(x - h)) / (2 * h);
+      if (dfx === 0 || !isFinite(dfx)) {
+        return { error: "Derivada numerica nula o no valida", iterations: iteraciones, root: x };
+      }
+      var x1 = x - fx / dfx;
+      var err = Math.abs(x1 - x);
+      iteraciones.push({
+        k: k,
+        x: x,
+        fx: fx,
+        dfx: dfx,
+        err: err
+      });
+      x = x1;
+      if (err < tol) {
+        break;
+      }
+    }
+    return { root: x, iterations: iteraciones };
+  }
+
+  function secant(f, x0, x1, tol, maxIter) {
+    var iteraciones = [];
+    var xPrev = x0;
+    var x = x1;
+    var fPrev = f(xPrev);
+    var fCurr = f(x);
+    if (!isFinite(fPrev) || !isFinite(fCurr)) {
+      return { error: "Valores iniciales no validos", iterations: [] };
+    }
+    for (var k = 1; k <= maxIter; k++) {
+      if (fCurr === fPrev) {
+        return { error: "Division por cero en secante", iterations: iteraciones, root: x };
+      }
+      var xNew = x - fCurr * (x - xPrev) / (fCurr - fPrev);
+      var err = Math.abs(xNew - x);
+      iteraciones.push({
+        k: k,
+        xPrev: xPrev,
+        x: x,
+        fPrev: fPrev,
+        fCurr: fCurr,
+        xNew: xNew,
+        err: err
+      });
+      xPrev = x;
+      x = xNew;
+      fPrev = fCurr;
+      fCurr = f(x);
+      if (err < tol) {
+        break;
+      }
+    }
+    return { root: x, iterations: iteraciones };
+  }
+
+  function drawPlot(f, method, params, root) {
+    var canvas = document.getElementById("plot");
+    var ctx = canvas.getContext("2d");
+    var w = canvas.width;
+    var h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+    var xmin;
+    var xmax;
+    if (method === "bisection") {
+      xmin = params.a;
+      xmax = params.b;
+    } else if (method === "newton") {
+      xmin = params.x0 - 5;
+      xmax = params.x0 + 5;
+    } else {
+      var m = Math.min(params.x0, params.x1);
+      var M = Math.max(params.x0, params.x1);
+      xmin = m - 2;
+      xmax = M + 2;
+    }
+    if (xmin === xmax) {
+      xmin -= 1;
+      xmax += 1;
+    }
+    var xs = [];
+    var ys = [];
+    var n = 420;
+    var minY = Infinity;
+    var maxY = -Infinity;
+    for (var i = 0; i <= n; i++) {
+      var x = xmin + (xmax - xmin) * (i / n);
+      var y = f(x);
+      xs.push(x);
+      ys.push(y);
+      if (isFinite(y)) {
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+    }
+    if (!isFinite(minY) || !isFinite(maxY) || minY === maxY) {
+      minY = -1;
+      maxY = 1;
+    }
+    ctx.fillStyle = "#020617";
+    ctx.fillRect(0, 0, w, h);
+    ctx.strokeStyle = "#111827";
+    ctx.lineWidth = 1;
+    if (0 >= xmin && 0 <= xmax) {
+      var zx = (0 - xmin) / (xmax - xmin) * w;
+      ctx.beginPath();
+      ctx.moveTo(zx, 0);
+      ctx.lineTo(zx, h);
+      ctx.stroke();
+    }
+    if (0 >= minY && 0 <= maxY) {
+      var zy = h - (0 - minY) / (maxY - minY) * h;
+      ctx.beginPath();
+      ctx.moveTo(0, zy);
+      ctx.lineTo(w, zy);
+      ctx.stroke();
+    }
+    ctx.strokeStyle = "#39ff14";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (var j = 0; j < xs.length; j++) {
+      var px = (xs[j] - xmin) / (xmax - xmin) * w;
+      var py = h - (ys[j] - minY) / (maxY - minY) * h;
+      if (j === 0) {
+        ctx.moveTo(px, py);
+      } else {
+        ctx.lineTo(px, py);
+      }
+    }
+    ctx.stroke();
+    if (typeof root === "number" && isFinite(root)) {
+      var rx = (root - xmin) / (xmax - xmin) * w;
+      var ry = h - (f(root) - minY) / (maxY - minY) * h;
+      ctx.fillStyle = "#facc15";
+      ctx.beginPath();
+      ctx.arc(rx, ry, 5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  function formatNumber(x, digits) {
+    if (!isFinite(x)) return "NaN";
+    return x.toExponential(digits);
+  }
+
+  function run() {
+    var expr = document.getElementById("expr").value.trim();
+    var errorDiv = document.getElementById("error");
+    var summaryDiv = document.getElementById("summary");
+    var tableWrap = document.getElementById("table-wrapper");
+    var table = document.getElementById("table-iter");
+    errorDiv.textContent = "";
+    summaryDiv.textContent = "";
+    tableWrap.style.display = "none";
+    table.innerHTML = "";
+    if (!expr) {
+      errorDiv.textContent = "Escribe una expresion para f(x).";
+      return;
+    }
+    var f;
+    try {
+      f = buildFunction(expr);
+      var test = f(0);
+      if (!isFinite(test)) {
+        throw new Error("resultado no valido");
+      }
+    } catch (e) {
+      errorDiv.textContent = "Error al interpretar f(x). Revisa la sintaxis.";
+      return;
+    }
+    var methodInput = document.querySelector('input[name="method"]:checked');
+    var method = methodInput ? methodInput.value : "bisection";
+    var tol = parseFloat(document.getElementById("tol").value);
+    var maxIter = parseInt(document.getElementById("maxIter").value, 10);
+    if (!isFinite(tol) || tol <= 0) {
+      errorDiv.textContent = "Tolerancia no valida.";
+      return;
+    }
+    if (!isFinite(maxIter) || maxIter <= 0) {
+      errorDiv.textContent = "Max iteraciones no valido.";
+      return;
+    }
+    var result;
+    var params = {};
+    if (method === "bisection") {
+      var a = parseFloat(document.getElementById("a").value);
+      var b = parseFloat(document.getElementById("b").value);
+      if (!isFinite(a) || !isFinite(b) || a >= b) {
+        errorDiv.textContent = "Intervalo [a,b] no valido.";
+        return;
+      }
+      params.a = a;
+      params.b = b;
+      result = bisection(f, a, b, tol, maxIter);
+    } else if (method === "newton") {
+      var x0 = parseFloat(document.getElementById("x0-newton").value);
+      if (!isFinite(x0)) {
+        errorDiv.textContent = "Valor x0 no valido.";
+        return;
+      }
+      params.x0 = x0;
+      result = newton(f, x0, tol, maxIter);
+    } else {
+      var x0s = parseFloat(document.getElementById("x0-secant").value);
+      var x1s = parseFloat(document.getElementById("x1-secant").value);
+      if (!isFinite(x0s) || !isFinite(x1s) || x0s === x1s) {
+        errorDiv.textContent = "Valores x0 y x1 no validos.";
+        return;
+      }
+      params.x0 = x0s;
+      params.x1 = x1s;
+      result = secant(f, x0s, x1s, tol, maxIter);
+    }
+    if (result.error) {
+      errorDiv.textContent = result.error;
+    }
+    if (typeof result.root === "number" && isFinite(result.root)) {
+      var kFinal = result.iterations.length;
+      summaryDiv.innerHTML =
+        '<span class="badge"><span class="dot"></span> Metodo: ' + method + "</span><br>" +
+        "Raiz aproximada: <b>" + result.root.toPrecision(10) + "</b><br>" +
+        "Iteraciones usadas: <b>" + kFinal + "</b>";
+    }
+    var it = result.iterations || [];
+    if (it.length > 0) {
+      tableWrap.style.display = "block";
+      var html = "";
+      if (method === "bisection") {
+        html += "<thead><tr><th>k</th><th>a</th><th>b</th><th>c</th><th>f(a)</th><th>f(b)</th><th>f(c)</th><th>error</th></tr></thead><tbody>";
+        for (var i = 0; i < it.length; i++) {
+          var r = it[i];
+          html += "<tr><td>" + r.k + "</td><td>" +
+            r.a.toPrecision(7) + "</td><td>" +
+            r.b.toPrecision(7) + "</td><td>" +
+            r.c.toPrecision(7) + "</td><td>" +
+            formatNumber(r.fa, 3) + "</td><td>" +
+            formatNumber(r.fb, 3) + "</td><td>" +
+            formatNumber(r.fc, 3) + "</td><td>" +
+            r.err.toExponential(3) + "</td></tr>";
+        }
+        html += "</tbody>";
+      } else if (method === "newton") {
+        html += "<thead><tr><th>k</th><th>x</th><th>f(x)</th><th>f&#8242;(x) num</th><th>error</th></tr></thead><tbody>";
+        for (var j = 0; j < it.length; j++) {
+          var r2 = it[j];
+          html += "<tr><td>" + r2.k + "</td><td>" +
+            r2.x.toPrecision(7) + "</td><td>" +
+            formatNumber(r2.fx, 3) + "</td><td>" +
+            formatNumber(r2.dfx, 3) + "</td><td>" +
+            r2.err.toExponential(3) + "</td></tr>";
+        }
+        html += "</tbody>";
+      } else {
+        html += "<thead><tr><th>k</th><th>x_{k-1}</th><th>x_k</th><th>f(x_{k-1})</th><th>f(x_k)</th><th>x_{k+1}</th><th>error</th></tr></thead><tbody>";
+        for (var t = 0; t < it.length; t++) {
+          var r3 = it[t];
+          html += "<tr><td>" + r3.k + "</td><td>" +
+            r3.xPrev.toPrecision(7) + "</td><td>" +
+            r3.x.toPrecision(7) + "</td><td>" +
+            formatNumber(r3.fPrev, 3) + "</td><td>" +
+            formatNumber(r3.fCurr, 3) + "</td><td>" +
+            r3.xNew.toPrecision(7) + "</td><td>" +
+            r3.err.toExponential(3) + "</td></tr>";
+        }
+        html += "</tbody>";
+      }
+      table.innerHTML = html;
+    }
+    var root = result.root;
+    drawPlot(f, method, params, root);
+  }
+
+  document.getElementById("run").addEventListener("click", run);
+
+  var methodRadios = document.querySelectorAll('input[name="method"]');
+  methodRadios.forEach(function(r) {
+    r.addEventListener("change", function() {
+      var m = document.querySelector('input[name="method"]:checked').value;
+      document.getElementById("inputs-bisection").style.display = m === "bisection" ? "block" : "none";
+      document.getElementById("inputs-newton").style.display = m === "newton" ? "block" : "none";
+      document.getElementById("inputs-secant").style.display = m === "secant" ? "block" : "none";
+    });
+  });
+</script>
+</body>
+</html>
